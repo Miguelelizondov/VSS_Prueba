@@ -22,20 +22,7 @@ IDebugSender *debugSender;
 
 State state;
 
-void send_commands();
-void send_debug();
-
-int main(int argc, char **argv)
-{
-
-    stateReceiver = new StateReceiver();
-    commandSender = new CommandSender();
-    debugSender = new DebugSender();
-
-    stateReceiver->createSocket();
-    commandSender->createSocket(TeamType::Yellow);
-    debugSender->createSocket(TeamType::Yellow);
-    vss::Debug debug;
+int main(int argc, char **argv){
 
     //Distancias
     double distEnemy1 = 0.0;
@@ -46,14 +33,25 @@ int main(int argc, char **argv)
     bool attack = false;
 
     //Posiciones a mandar a PATHPLANNING // x,y
+    //Robot Verde
     std::pair<int, int> coordenadas1;
+    //Robot Morado
     std::pair<int, int> coordenadas2;
+    //Portero
     std::pair<int, int> coordenadasPortero;
 
     //Portero algoritmo
     std::pair<int, int> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
 
     srand(time(NULL));
+    stateReceiver = new StateReceiver();
+    commandSender = new CommandSender();
+    debugSender = new DebugSender();
+
+    stateReceiver->createSocket();
+    commandSender->createSocket(TeamType::Yellow);
+    debugSender->createSocket(TeamType::Yellow);
+    
 
     while (true)
     {
@@ -67,9 +65,13 @@ int main(int argc, char **argv)
         //"Atacante" en teoria
         distFriend2 = sqrt((state.ball.x - state.teamYellow[2].x) * (state.ball.x - state.teamYellow[2].x) + (state.ball.y - state.teamYellow[2].y) * (state.ball.y - state.teamYellow[2].y));
 
+        // Si la distancia del verde es mayor
+        
         attack = (distFriend1 > distFriend2) ? true : false;
 
         //Coordenadas del portero
+        coordenadasPortero.first = 160;
+
         if (state.ball.y <= limitesPorteria.first && state.ball.y >= limitesPorteria.second)
         {
             //coordenadasPortero.first = 0; //Poner la x
@@ -85,19 +87,20 @@ int main(int argc, char **argv)
         }
 
         //Coordenadas de atacante y defensor, se mueven
+        //Robot Morado ataca
         if (attack)
-        {
-            coordenadas1.first = state.ball.x;
-            coordenadas1.second = state.ball.y;
-            coordenadas2.first = state.ball.x + 50; //la x tiene que cambiar----- cambiar numero de pixeles
-            coordenadas2.second = state.ball.y;
-        }
-        else
         {
             coordenadas2.first = state.ball.x;
             coordenadas2.second = state.ball.y;
-            coordenadas1.first = state.ball.x + 50; //la x tiene que cambiar----- cambiar numero de pixeles
+            coordenadas1.first = state.ball.x + 30; //la x tiene que cambiar----- cambiar numero de pixeles
             coordenadas1.second = state.ball.y;
+        }
+        else
+        {
+            coordenadas1.first = state.ball.x;
+            coordenadas1.second = state.ball.y;
+            coordenadas2.first = state.ball.x + 30; //la x tiene que cambiar----- cambiar numero de pixeles
+            coordenadas2.second = state.ball.y;
         }
         std::cout << "Distancia Enemigo1: " << distEnemy1 << std::endl;
         std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
@@ -107,10 +110,12 @@ int main(int argc, char **argv)
         std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
         std::cout << "Coordenadas Amigo X " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
         std::cout << "Coordenadas Amigo X " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
-
+        
+        vss::Debug debug;
         debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
+        debugSender->sendDebug(debug);
     }
 
     // Checar los dos robots contrincantes, sacar su distancia de ellos hacia la pelota
