@@ -22,7 +22,16 @@ IDebugSender *debugSender;
 
 State state;
 
-int main(int argc, char **argv){
+int main(int argc, char **argv)
+{
+    srand(time(NULL));
+    stateReceiver = new StateReceiver();
+    commandSender = new CommandSender();
+    debugSender = new DebugSender();
+
+    stateReceiver->createSocket();
+    commandSender->createSocket(TeamType::Yellow);
+    debugSender->createSocket(TeamType::Yellow);
 
     //Distancias
     double distEnemy1 = 0.0;
@@ -39,35 +48,80 @@ int main(int argc, char **argv){
     std::pair<int, int> coordenadas2;
     //Portero
     std::pair<int, int> coordenadasPortero;
-
     //Portero algoritmo
     std::pair<int, int> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
 
-    srand(time(NULL));
-    stateReceiver = new StateReceiver();
-    commandSender = new CommandSender();
-    debugSender = new DebugSender();
-
-    stateReceiver->createSocket();
-    commandSender->createSocket(TeamType::Yellow);
-    debugSender->createSocket(TeamType::Yellow);
-    
-
     while (true)
     {
+
         state = stateReceiver->receiveState(FieldTransformationType::None);
         std::cout << state << std::endl;
 
-        distEnemy1 = sqrt((state.ball.x - state.teamBlue[1].x) * (state.ball.x - state.teamBlue[1].x) + (state.ball.y - state.teamBlue[1].y) * (state.ball.y - state.teamBlue[1].y));
-        distEnemy2 = sqrt((state.ball.x - state.teamBlue[2].x) * (state.ball.x - state.teamBlue[2].x) + (state.ball.y - state.teamBlue[2].y) * (state.ball.y - state.teamBlue[2].y));
-        //"Defensa" en teoria
-        distFriend1 = sqrt((state.ball.x - state.teamYellow[1].x) * (state.ball.x - state.teamYellow[1].x) + (state.ball.y - state.teamYellow[1].y) * (state.ball.y - state.teamYellow[1].y));
-        //"Atacante" en teoria
-        distFriend2 = sqrt((state.ball.x - state.teamYellow[2].x) * (state.ball.x - state.teamYellow[2].x) + (state.ball.y - state.teamYellow[2].y) * (state.ball.y - state.teamYellow[2].y));
+        //1 Verde, 2 morado
+        distEnemy1 = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
+        distEnemy2 = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
+        distFriend1 = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
+        distFriend2 = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[1].y);
 
         // Si la distancia del verde es mayor
-        
         attack = (distFriend1 > distFriend2) ? true : false;
+
+        //PONER EN CASO DE QUE UN ROBOT TENGA LA PELOTA
+
+        //CUANDO NO SE TIENE LA PELOTA
+        if (state.ball.x > 130) //Pelota en nuestro territorio // cambiar constantes
+        {
+            switch (attack)
+            {
+            case 0: //Esta más cerca el friend2 (Morado)
+                //Se manda las coordenadas de la pelota al robot morado
+                if (state.ball.y >= 50)
+                    posiciones(state.ball.x + 10, state.ball.y - 20, state.ball.x, state.ball.y);
+                else
+                    posiciones(state.ball.x + 10, state.ball.y + 20, state.ball.x, state.ball.y);
+
+                break;
+            case 1: //Esta más cerca el friend1
+                if (state.ball.y > 50)
+                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y - 20);
+                else
+                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y + 20);
+                break;
+            }
+        }
+        else if (state.ball.x < 50)
+        { // cuando se esta atacando
+            switch (attack)
+            {
+            case 0: //Esta más cerca el friend2 (Morado)
+                //Se manda las coordenadas de la pelota al robot morado
+                if (state.ball.y >= 50)
+                    posiciones(state.ball.x - 10, state.ball.y - 20, state.ball.x, state.ball.y);
+                else
+                    posiciones(state.ball.x - 10, state.ball.y + 20, state.ball.x, state.ball.y);
+
+                break;
+            case 1: //Esta más cerca el friend1
+                if (state.ball.y > 50)
+                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 20);
+                else
+                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 20);
+                break;
+            }
+        }
+        else
+        {
+            switch (attack)
+            {
+            case 0:
+                posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y);
+                break;
+
+            case 1:
+                posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second);
+                break;
+            }
+        }
 
         //Coordenadas del portero
         coordenadasPortero.first = 160;
@@ -88,20 +142,7 @@ int main(int argc, char **argv){
 
         //Coordenadas de atacante y defensor, se mueven
         //Robot Morado ataca
-        if (attack)
-        {
-            coordenadas2.first = state.ball.x;
-            coordenadas2.second = state.ball.y;
-            coordenadas1.first = state.ball.x + 30; //la x tiene que cambiar----- cambiar numero de pixeles
-            coordenadas1.second = state.ball.y;
-        }
-        else
-        {
-            coordenadas1.first = state.ball.x;
-            coordenadas1.second = state.ball.y;
-            coordenadas2.first = state.ball.x + 30; //la x tiene que cambiar----- cambiar numero de pixeles
-            coordenadas2.second = state.ball.y;
-        }
+
         std::cout << "Distancia Enemigo1: " << distEnemy1 << std::endl;
         std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
         std::cout << "Distancia Friend2: " << distFriend1 << std::endl;
@@ -110,7 +151,7 @@ int main(int argc, char **argv){
         std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
         std::cout << "Coordenadas Amigo X " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
         std::cout << "Coordenadas Amigo X " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
-        
+
         vss::Debug debug;
         debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
@@ -133,4 +174,18 @@ int main(int argc, char **argv){
     //Tener otro caso en donde un los dos robots suban, sin embargo uno se quede a un cierto rango para no interferir en la jugada
     //debug.finalPoses.push_back(Pose(85 + rand() % 20, 65 + rand() % 20, rand() % 20));
     return 0;
+}
+
+//Primeras coordenadas robot verde // Segundas coordenadas robot morado
+void posiciones(double firstX, double firstY, double, secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
+{
+    coordenadas1.first = firstX;
+    coordenadas1.second = firstY;
+    coordenadas2.first = secondX;
+    coordenadas2.second = secondY;
+}
+
+double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+{
+    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
 }
