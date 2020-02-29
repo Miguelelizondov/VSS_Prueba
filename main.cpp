@@ -71,15 +71,18 @@ int main(int argc, char **argv)
         //CUANDO NO SE TIENE LA PELOTA
         if (state.ball.x > 130) //Pelota en nuestro territorio // cambiar constantes
         {
+            std::cout << "DEFENSA ---  " << std::endl;
             switch (attack)
             {
             case 0: //Esta más cerca el friend2 (Morado)
                 //Se manda las coordenadas de la pelota al robot morado
+
                 if (state.ball.y >= 50)
                     posiciones(state.ball.x + 10, state.ball.y - 20, state.ball.x, state.ball.y);
                 else
                     posiciones(state.ball.x + 10, state.ball.y + 20, state.ball.x, state.ball.y);
 
+                std::cout << "   ";
                 break;
             case 1: //Esta más cerca el friend1
                 if (state.ball.y > 50)
@@ -91,6 +94,7 @@ int main(int argc, char **argv)
         }
         else if (state.ball.x < 50)
         { // cuando se esta atacando
+            std::cout << "ATAQUE " << std::endl;
             switch (attack)
             {
             case 0: //Esta más cerca el friend2 (Morado)
@@ -111,6 +115,7 @@ int main(int argc, char **argv)
         }
         else
         {
+            std::cout << "MEDIA ---  " << std::endl;
             switch (attack)
             {
             case 0:
@@ -142,8 +147,9 @@ int main(int argc, char **argv)
 
         //Coordenadas de atacante y defensor, se mueven
         //Robot Morado ataca
-
-        std::cout << "Distancia Enemigo1: " << distEnemy1 << std::endl;
+        t
+                std::cout
+            << "Distancia Enemigo1: " << distEnemy1 << std::endl;
         std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
         std::cout << "Distancia Friend2: " << distFriend1 << std::endl;
         std::cout << "Distancia Friend1: " << distFriend2 << std::endl;
