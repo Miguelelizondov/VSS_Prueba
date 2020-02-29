@@ -22,6 +22,19 @@ IDebugSender *debugSender;
 
 State state;
 
+void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
+{
+    coordenadas1.first = firstX;
+    coordenadas1.second = firstY;
+    coordenadas2.first = secondX;
+    coordenadas2.second = secondY;
+}
+
+double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+{
+    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
+}
+
 int main(int argc, char **argv)
 {
     srand(time(NULL));
@@ -67,9 +80,9 @@ int main(int argc, char **argv)
         attack = (distFriend1 > distFriend2) ? true : false;
 
         //PONER EN CASO DE QUE UN ROBOT TENGA LA PELOTA
-
+        std::cout<<"hola--"<<std::endl;
         //CUANDO NO SE TIENE LA PELOTA
-        if (state.ball.x > 130) //Pelota en nuestro territorio // cambiar constantes
+        if (state.ball.x > 110) //Pelota en nuestro territorio // cambiar constantes
         {
             std::cout << "DEFENSA ---  " << std::endl;
             switch (attack)
@@ -77,39 +90,39 @@ int main(int argc, char **argv)
             case 0: //Esta más cerca el friend2 (Morado)
                 //Se manda las coordenadas de la pelota al robot morado
 
-                if (state.ball.y >= 50)
-                    posiciones(state.ball.x + 10, state.ball.y - 20, state.ball.x, state.ball.y);
+                if (state.ball.y >=63)
+                    posiciones(state.ball.x + 10, state.ball.y - 20, state.ball.x, state.ball.y,coordenadas1,coordenadas2);
                 else
-                    posiciones(state.ball.x + 10, state.ball.y + 20, state.ball.x, state.ball.y);
+                    posiciones(state.ball.x + 10, state.ball.y + 20, state.ball.x, state.ball.y,coordenadas1,coordenadas2);
 
                 std::cout << "   ";
                 break;
             case 1: //Esta más cerca el friend1
-                if (state.ball.y > 50)
-                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y - 20);
+                if (state.ball.y > 63)
+                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y - 20,coordenadas1, coordenadas2);
                 else
-                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y + 20);
+                    posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y + 20,coordenadas1,coordenadas2);
                 break;
             }
         }
-        else if (state.ball.x < 50)
+        else if (state.ball.x < 60)
         { // cuando se esta atacando
             std::cout << "ATAQUE " << std::endl;
             switch (attack)
             {
             case 0: //Esta más cerca el friend2 (Morado)
                 //Se manda las coordenadas de la pelota al robot morado
-                if (state.ball.y >= 50)
-                    posiciones(state.ball.x - 10, state.ball.y - 20, state.ball.x, state.ball.y);
+                if (state.ball.y >= 63)
+                    posiciones(state.ball.x - 10, state.ball.y - 20, state.ball.x, state.ball.y,coordenadas1,coordenadas2);
                 else
-                    posiciones(state.ball.x - 10, state.ball.y + 20, state.ball.x, state.ball.y);
+                    posiciones(state.ball.x - 10, state.ball.y + 20, state.ball.x, state.ball.y,coordenadas1,coordenadas2);
 
                 break;
             case 1: //Esta más cerca el friend1
-                if (state.ball.y > 50)
-                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 20);
+                if (state.ball.y > 63)
+                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 20,coordenadas1,coordenadas2);
                 else
-                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 20);
+                    posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 20,coordenadas1,coordenadas2);
                 break;
             }
         }
@@ -119,11 +132,11 @@ int main(int argc, char **argv)
             switch (attack)
             {
             case 0:
-                posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y);
+                posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y,coordenadas1,coordenadas2);
                 break;
 
             case 1:
-                posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second);
+                posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second,coordenadas1,coordenadas2);
                 break;
             }
         }
@@ -147,9 +160,8 @@ int main(int argc, char **argv)
 
         //Coordenadas de atacante y defensor, se mueven
         //Robot Morado ataca
-        t
-                std::cout
-            << "Distancia Enemigo1: " << distEnemy1 << std::endl;
+        
+        std::cout<< "Distancia Enemigo1: " << distEnemy1 << std::endl;
         std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
         std::cout << "Distancia Friend2: " << distFriend1 << std::endl;
         std::cout << "Distancia Friend1: " << distFriend2 << std::endl;
@@ -183,15 +195,3 @@ int main(int argc, char **argv)
 }
 
 //Primeras coordenadas robot verde // Segundas coordenadas robot morado
-void posiciones(double firstX, double firstY, double, secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
-{
-    coordenadas1.first = firstX;
-    coordenadas1.second = firstY;
-    coordenadas2.first = secondX;
-    coordenadas2.second = secondY;
-}
-
-double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
-{
-    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
-}
