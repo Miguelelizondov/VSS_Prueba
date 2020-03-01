@@ -36,6 +36,23 @@ void send_commands()
 
 void irACoordenadas(double anguloActual, std::pair<int, int> coordenadas, int i)
 {
+
+    if (coordenadas.first < state.teamYellow[i].x && coordenadas.second < state.teamYellow[i].y)
+    { //Esta arriba izquierda
+        state.teamYellow[i].angle = 45;
+    }
+    else if (coordenadas.first < state.teamYellow[i].x && coordenadas.second >= state.teamYellow[i].y)
+    { // abajo izq
+        state.teamYellow[i].angle = 315;
+    }
+    else if (coordenadas.first > state.teamYellow[i].x && coordenadas.second < state.teamYellow[i].y)
+    { // arriba derecha
+        state.teamYellow[i].angle = 135;
+    }
+    else
+    { // abajo derecha
+        state.teamYellow[i].angle = 225;
+    }
 }
 
 //Primeras coordenadas robot verde // Segundas coordenadas robot morado
@@ -99,9 +116,9 @@ int main(int argc, char **argv)
         attack = (distFriend1 > distFriend2) ? true : false;
 
         if (attack)
-            hasBall = (distFriend2 < 5 && state.ball.x < state.teamYellow[2].x) ? true : false;
+            hasBall = (distFriend2 < 10 && state.ball.x < state.teamYellow[2].x) ? true : false;
         else
-            hasBall = (distFriend1 < 5 && state.ball.x < state.teamYellow[1].x) ? true : false;
+            hasBall = (distFriend1 < 10 && state.ball.x < state.teamYellow[1].x) ? true : false;
 
         //Si se tiene la pelota
         if (hasBall)
@@ -210,6 +227,12 @@ int main(int argc, char **argv)
         debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
+
+        Command command;
+        command.commands.push_back(WheelsCommand(1, 1));
+        command.commands.push_back(WheelsCommand(10, 10));
+        command.commands.push_back(WheelsCommand(10, 10));
+
         debugSender->sendDebug(debug);
     }
 
