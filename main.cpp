@@ -34,7 +34,7 @@ void send_commands()
     commandSender->sendCommand(command);
 }
 
-void irACoordenadas(double anguloActual, std::pair<int, int> coordenadas, int i)
+void irACoordenadas(std::pair<int, int> coordenadas, int i)
 {
 
     if (coordenadas.first < state.teamYellow[i].x && coordenadas.second < state.teamYellow[i].y)
@@ -222,6 +222,9 @@ int main(int argc, char **argv)
         std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
         std::cout << "Coordenadas Amigo 1 " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
         std::cout << "Coordenadas Amigo 2 " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
+
+        irACoordenadas(coordenadas1, 1);
+        irACoordenadas(coordenadas2, 2);
 
         vss::Debug debug;
         debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
