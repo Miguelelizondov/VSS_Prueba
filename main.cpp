@@ -34,7 +34,7 @@ void send_commands()
     commandSender->sendCommand(command);
 }
 
-void irACoordenadas()
+void irACoordenadas(double anguloActual, std::pair<int, int> coordenadas, int i)
 {
 }
 
