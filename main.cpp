@@ -22,36 +22,35 @@ IDebugSender *debugSender;
 
 State state;
 
- void send_commands()
+void send_commands()
+{
+    Command command;
+
+    for (int i = 0; i < 3; i++)
     {
-        Command command;
-
-        for (int i = 0; i < 3; i++)
-        {
-            command.commands.push_back(WheelsCommand(10, -10));
-        }
-
-        commandSender->sendCommand(command);
+        command.commands.push_back(WheelsCommand(10, -10));
     }
 
-    void irACoordenadas()
-    {
-    }
+    commandSender->sendCommand(command);
+}
 
-    //Primeras coordenadas robot verde // Segundas coordenadas robot morado
-    void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
-    {
-        coordenadas1.first = firstX;
-        coordenadas1.second = firstY;
-        coordenadas2.first = secondX;
-        coordenadas2.second = secondY;
-    }
+void irACoordenadas()
+{
+}
 
-    double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
-    {
-        return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
-    }
+//Primeras coordenadas robot verde // Segundas coordenadas robot morado
+void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
+{
+    coordenadas1.first = firstX;
+    coordenadas1.second = firstY;
+    coordenadas2.first = secondX;
+    coordenadas2.second = secondY;
+}
 
+double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+{
+    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
+}
 
 int main(int argc, char **argv)
 {
@@ -84,7 +83,6 @@ int main(int argc, char **argv)
     //Portero algoritmo
     std::pair<int, int> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
 
-   
     while (true)
     {
 
@@ -110,9 +108,9 @@ int main(int argc, char **argv)
         {
             coordY = 130 - state.teamBlue[0].y;
             if (attack)
-                posiciones(coordenadas1.first, coordenadas1.second, 10, coordY, coordenadas1, coordenadas2);
+                posiciones(state.teamYellow[1].x, state.teamYellow[1].y, 10, coordY, coordenadas1, coordenadas2);
             else
-                posiciones(10, coordY, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
+                posiciones(10, coordY, state.teamYellow[2].x, state.teamYellow[2].y coordenadas1, coordenadas2);
         }
         else // no se tiene la pelota
         {
@@ -163,17 +161,17 @@ int main(int argc, char **argv)
                 }
             }
             else
-            { // cuando se esta en la media
+            {                   // cuando se esta en la media
                 switch (attack) // verde mas lejos
                 {
                 case 0:
-                    std::cout<<"media -- morado"<<std::endl;
-                    posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
+                    std::cout << "media -- morado" << std::endl;
+                    posiciones(state.ball.x, state.ball.y, state.teamYellow[2].x, state.teamYellow[2].y, coordenadas1, coordenadas2);
                     break;
 
                 case 1: // verde mas lejos
-                std::cout<<"media -- verde"<<std::endl;
-                    posiciones(state.teamYellow, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                    std::cout << "media -- verde" << std::endl;
+                    posiciones(state.teamYellow[1].x, state.teamYellow[1].y, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
                     break;
                 }
             }
