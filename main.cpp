@@ -53,6 +53,36 @@ int main(int argc, char **argv)
     //Portero algoritmo
     std::pair<int, int> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
 
+    void send_commands()
+    {
+        Command command;
+
+        for (int i = 0; i < 3; i++)
+        {
+            command.commands.push_back(WheelsCommand(10, -10));
+        }
+
+        commandSender->sendCommand(command);
+    }
+
+    void irACoordenadas()
+    {
+    }
+
+    //Primeras coordenadas robot verde // Segundas coordenadas robot morado
+    void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
+    {
+        coordenadas1.first = firstX;
+        coordenadas1.second = firstY;
+        coordenadas2.first = secondX;
+        coordenadas2.second = secondY;
+    }
+
+    double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+    {
+        return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
+    }
+
     while (true)
     {
 
@@ -193,34 +223,4 @@ int main(int argc, char **argv)
     //Tener otro caso en donde un los dos robots suban, sin embargo uno se quede a un cierto rango para no interferir en la jugada
     //debug.finalPoses.push_back(Pose(85 + rand() % 20, 65 + rand() % 20, rand() % 20));
     return 0;
-}
-
-void send_commands()
-{
-    Command command;
-
-    for (int i = 0; i < 3; i++)
-    {
-        command.commands.push_back(WheelsCommand(10, -10));
-    }
-
-    commandSender->sendCommand(command);
-}
-
-void irACoordenadas()
-{
-}
-
-//Primeras coordenadas robot verde // Segundas coordenadas robot morado
-void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
-{
-    coordenadas1.first = firstX;
-    coordenadas1.second = firstY;
-    coordenadas2.first = secondX;
-    coordenadas2.second = secondY;
-}
-
-double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
-{
-    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
 }
