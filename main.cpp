@@ -22,6 +22,37 @@ IDebugSender *debugSender;
 
 State state;
 
+ void send_commands()
+    {
+        Command command;
+
+        for (int i = 0; i < 3; i++)
+        {
+            command.commands.push_back(WheelsCommand(10, -10));
+        }
+
+        commandSender->sendCommand(command);
+    }
+
+    void irACoordenadas()
+    {
+    }
+
+    //Primeras coordenadas robot verde // Segundas coordenadas robot morado
+    void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
+    {
+        coordenadas1.first = firstX;
+        coordenadas1.second = firstY;
+        coordenadas2.first = secondX;
+        coordenadas2.second = secondY;
+    }
+
+    double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+    {
+        return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
+    }
+
+
 int main(int argc, char **argv)
 {
     srand(time(NULL));
@@ -53,36 +84,7 @@ int main(int argc, char **argv)
     //Portero algoritmo
     std::pair<int, int> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
 
-    void send_commands()
-    {
-        Command command;
-
-        for (int i = 0; i < 3; i++)
-        {
-            command.commands.push_back(WheelsCommand(10, -10));
-        }
-
-        commandSender->sendCommand(command);
-    }
-
-    void irACoordenadas()
-    {
-    }
-
-    //Primeras coordenadas robot verde // Segundas coordenadas robot morado
-    void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<int, int> &coordenadas1, std::pair<int, int> &coordenadas2)
-    {
-        coordenadas1.first = firstX;
-        coordenadas1.second = firstY;
-        coordenadas2.first = secondX;
-        coordenadas2.second = secondY;
-    }
-
-    double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
-    {
-        return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
-    }
-
+   
     while (true)
     {
 
@@ -93,7 +95,7 @@ int main(int argc, char **argv)
         distEnemy1 = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
         distEnemy2 = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
         distFriend1 = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
-        distFriend2 = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[1].y);
+        distFriend2 = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
 
         // Si la distancia del verde es mayor
         attack = (distFriend1 > distFriend2) ? true : false;
@@ -162,15 +164,16 @@ int main(int argc, char **argv)
             }
             else
             { // cuando se esta en la media
-                switch (attack)
+                switch (attack) // verde mas lejos
                 {
                 case 0:
+                    std::cout<<"media -- morado"<<std::endl;
                     posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
                     break;
 
-                case 1:
-
-                    posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                case 1: // verde mas lejos
+                std::cout<<"media -- verde"<<std::endl;
+                    posiciones(state.teamYellow, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
                     break;
                 }
             }
@@ -202,8 +205,8 @@ int main(int argc, char **argv)
         std::cout << "Distancia Friend1: " << distFriend2 << std::endl;
         std::cout << "--------------------------------" << std::endl;
         std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
-        std::cout << "Coordenadas Amigo X " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
-        std::cout << "Coordenadas Amigo X " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
+        std::cout << "Coordenadas Amigo 1 " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
+        std::cout << "Coordenadas Amigo 2 " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
 
         vss::Debug debug;
         debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
