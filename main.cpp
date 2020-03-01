@@ -129,16 +129,16 @@ int main(int argc, char **argv)
                         posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 20, coordenadas1, coordenadas2);
                     break;
                 }
-                else
-                { // cuando se esta en la media
-                case 0:
-                    posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-                    break;
+            }
+            else
+            { // cuando se esta en la media
+            case 0:
+                posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                break;
 
-                case 1:
-                    posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
-                    break;
-                }
+            case 1:
+                posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
+                break;
             }
         }
 
