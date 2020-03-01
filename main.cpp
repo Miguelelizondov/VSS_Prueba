@@ -47,7 +47,7 @@ void posiciones(double firstX, double firstY, double secondX, double secondY, st
     coordenadas2.second = secondY;
 }
 
-double calcularDistancia(double firstX, double firstY, double secondX, double secondY)
+double calcularDistancia(double firstX, double secondX, double firstY, double secondY)
 {
     return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
 }
@@ -110,7 +110,7 @@ int main(int argc, char **argv)
             if (attack)
                 posiciones(state.teamYellow[1].x, state.teamYellow[1].y, 10, coordY, coordenadas1, coordenadas2);
             else
-                posiciones(10, coordY, state.teamYellow[2].x, state.teamYellow[2].y coordenadas1, coordenadas2);
+                posiciones(10, coordY, state.teamYellow[2].x, state.teamYellow[2].y, coordenadas1, coordenadas2);
         }
         else // no se tiene la pelota
         {
@@ -199,8 +199,8 @@ int main(int argc, char **argv)
 
         std::cout << "Distancia Enemigo1: " << distEnemy1 << std::endl;
         std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
-        std::cout << "Distancia Friend2: " << distFriend1 << std::endl;
-        std::cout << "Distancia Friend1: " << distFriend2 << std::endl;
+        std::cout << "Distancia Friend1: " << distFriend1 << std::endl;
+        std::cout << "Distancia Friend2: " << distFriend2 << std::endl;
         std::cout << "--------------------------------" << std::endl;
         std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
         std::cout << "Coordenadas Amigo 1 " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
