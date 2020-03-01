@@ -121,7 +121,7 @@ int main(int argc, char **argv)
                 std::cout << "Defensa" << std::endl;
                 switch (attack)
                 {
-                case 0: //Esta más cerca el friend2 (Morado)
+                case 1: //Esta más cerca el friend2 (Morado)
                     //Se manda las coordenadas de la pelota al robot morado
 
                     if (state.ball.y >= 63)
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
 
                     std::cout << "   ";
                     break;
-                case 1: //Esta más cerca el friend1
+                case 0: //Esta más cerca el friend1
                     if (state.ball.y > 63)
                         posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y - 20, coordenadas1, coordenadas2);
                     else
@@ -144,7 +144,7 @@ int main(int argc, char **argv)
                 std::cout << "ATAQUE " << std::endl;
                 switch (attack)
                 {
-                case 0: //Esta más cerca el friend2 (Morado)
+                case 1: //Esta más cerca el friend2 (Morado)
                     //Se manda las coordenadas de la pelota al robot morado
                     if (state.ball.y >= 63)
                         posiciones(state.ball.x - 10, state.ball.y - 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
@@ -152,7 +152,7 @@ int main(int argc, char **argv)
                         posiciones(state.ball.x - 10, state.ball.y + 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
 
                     break;
-                case 1: //Esta más cerca el friend1
+                case 0: //Esta más cerca el friend1
                     if (state.ball.y > 63)
                         posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 20, coordenadas1, coordenadas2);
                     else
@@ -162,13 +162,17 @@ int main(int argc, char **argv)
             }
             else
             { // cuando se esta en la media
-            case 0:
-                posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-                break;
+                switch (attack)
+                {
+                case 0:
+                    posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
+                    break;
 
-            case 1:
-                posiciones(state.ball.x, state.ball.y, coordenadas2.first, coordenadas2.second, coordenadas1, coordenadas2);
-                break;
+                case 1:
+
+                    posiciones(coordenadas1.first, coordenadas1.second, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                    break;
+                }
             }
         }
 
