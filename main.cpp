@@ -129,7 +129,7 @@ struct robot
 
     void adjustVar(double dist, State &state)
     {
-        attack = (dBall > dist) ? true : false;                                                     // si le corresponde atacar
+        attack = (dBall < dist) ? true : false;                                                     // si le corresponde atacar
         hasBall = (dBall < 10.0 && state.ball.x < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
@@ -174,7 +174,7 @@ struct robot
     void portero()
     {
         x_dest = 160;
-        y_dest = state.ball.y < 46 ? 46 : state.ball.y > 84 ? 84 : state.ball.y;
+        y_dest = (state.ball.y < 46) ? 46 : (state.ball.y > 84) ? 84 : state.ball.y;
     }
     void print()
     {
