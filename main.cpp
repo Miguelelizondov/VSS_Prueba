@@ -109,21 +109,111 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
     std::cout << id << ": " << result.first << " " << result.second << std::endl;
 }
 
-//Primeras coordenadas robot verde // Segundas coordenadas robot morado
-void posiciones(double firstX, double firstY, double secondX, double secondY, std::pair<double, double> &coordenadas1, std::pair<double, double> &coordenadas2)
+double calcularDistancia(double x1, double x2, double y1, double y2)
 {
-    coordenadas1.first = firstX;
-    coordenadas1.second = firstY;
-    coordenadas2.first = secondX;
-    coordenadas2.second = secondY;
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-double calcularDistancia(double firstX, double secondX, double firstY, double secondY)
+void calcularDistanciasTotales()
 {
-    return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
+    pEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
+    gEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
+    pFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
+    gFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
 }
 
 std::vector<std::pair<double, double>> velocities;
+
+struct robot
+{
+    double dBall;
+    bool attack;
+    bool hasBall;
+    double x;
+    double y;
+    double x_dest;
+    double y_dest;
+    int id;
+    State state;
+    robot(int id)
+    {
+        this->id = id;
+    }
+
+    void adjustVar(double dist, State &state)
+    {
+        attack = (dBall > dist) ? true : false;                                                     // si le corresponde atacar
+        hasBall = (dBall < 10.0 && state.ball.x < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        x = state.teamYellow[id].x;
+        y = state.teamYellow[id].y;
+
+        if (hasBall) // si se tiene la pelota y se esta atacando
+        {
+            x_dest = 10;
+            y_dest = 130 - state.teamBlue[0].y;
+        }
+        else // si no se tiene la pelota
+        {
+            if (attack) // si no se tiene la pelota, pero se esta atacando
+            {
+                x_dest = state.ball.x;
+                y_dest = state.ball.y;
+            }
+            else
+            {
+                if (state.ball.x > 110.0 || state.ball.x < 60.0)
+                {
+                    if (state.ball.y >= 63.0)
+                    {
+                        x_dest = state.ball.x + 10.0;
+                        y_dest = state.ball.y - 30.0;
+                    }
+                    else
+                    {
+                        x_dest = state.ball.x + 10.0;
+                        y_dest = state.ball.y + 30.0;
+                    }
+                }
+                else
+                {
+                    x_dest = x;
+                    y_dest = y;
+                }
+            }
+        }
+        // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
+        // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
+    }
+    void portero()
+    {
+        x_dest = 160;
+        y_dest = state.ball.y < 46 ? 46 : state.ball.y > 84 ? 84 : state.ball.y;
+    }
+    void print()
+    {
+        std::cout << " Robot " << id << " ----- " << std::endl
+                  << std::endl;
+        std::cout << "X Now: " << x << std::endl;
+        std::cout << "Y Now: " << y << std::endl;
+        std::cout << "X Dest: " << x_dest << std::endl;
+        std::cout << "Y Dest: " << y_dest << std::endl;
+        std::cout << "Ball Distance: " << dBall << std::endl;
+    }
+};
+
+void act(robot &first, robot &second, robot &keeper, State state)
+{
+    first.adjustVar(second.dBall, state);
+    second.adjustVar(first.dBall, state);
+    keeper.portero();
+}
+
+robot pEnemy(2);
+robot gEnemy(1);
+robot rEnemy(0);
+robot pFriend(2); // 2
+robot gFriend(1); // 1
+robot rFriend(0);
 
 int main(int argc, char **argv)
 {
@@ -136,158 +226,28 @@ int main(int argc, char **argv)
     commandSender->createSocket(TeamType::Yellow);
     debugSender->createSocket(TeamType::Yellow);
 
-    //Distancias
-    double distEnemy1 = 0.0;
-    double distEnemy2 = 0.0;
-    double distFriend1 = 0.0;
-    double distFriend2 = 0.0;
-
-    bool attack = false;
-    bool hasBall;
-    double coordY = 0.0;
-
-    //Posiciones a mandar a PATHPLANNING // x,y
-    //Robot Verde
-    std::pair<double, double> coordenadas1;
-    //Robot Morado
-    std::pair<double, double> coordenadas2;
-    //Portero
-    std::pair<double, double> coordenadasPortero;
-    //Portero algoritmo
-    std::pair<double, double> limitesPorteria(84, 46); // y_menor, y_mayor PONER LOS PIXELES DE ESTA
-
     while (true)
     {
 
         state = stateReceiver->receiveState(FieldTransformationType::None);
         velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
-        std::cout << state << std::endl;
+        //std::cout << state << std::endl;
 
-        //1 Verde, 2 morado
-        distEnemy1 = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
-        distEnemy2 = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
-        distFriend1 = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
-        distFriend2 = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
-
-        // Si la distancia del verde es mayor
-        attack = (distFriend1 > distFriend2) ? true : false;
-
-        if (attack)
-            hasBall = (distFriend2 < 10.0 && state.ball.x < state.teamYellow[2].x) ? true : false;
-        else
-            hasBall = (distFriend1 < 10.0 && state.ball.x < state.teamYellow[1].x) ? true : false;
-
-        //Si se tiene la pelota
-        if (hasBall)
-        {
-            coordY = 130.0 - state.teamBlue[0].y;
-            if (attack)
-                posiciones(state.teamYellow[1].x, state.teamYellow[1].y, 10.0, coordY, coordenadas1, coordenadas2);
-            else
-                posiciones(10.0, coordY, state.teamYellow[2].x, state.teamYellow[2].y, coordenadas1, coordenadas2);
-        }
-        else // no se tiene la pelota
-        {
-
-            //CUANDO NO SE TIENE LA PELOTA
-            if (state.ball.x > 110.0) //Pelota en nuestro territorio // cambiar constantes
-            {
-                std::cout << "Defensa" << std::endl;
-                switch (attack)
-                {
-                case 1: //Esta más cerca el friend2 (Morado)
-                    //Se manda las coordenadas de la pelota al robot morado
-
-                    if (state.ball.y >= 63.0)
-                        posiciones(state.ball.x + 10, state.ball.y - 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-                    else
-                        posiciones(state.ball.x + 10, state.ball.y + 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-
-                    std::cout << "   ";
-                    break;
-                case 0: //Esta más cerca el friend1
-                    if (state.ball.y > 63.0)
-                        posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y - 20, coordenadas1, coordenadas2);
-                    else
-                        posiciones(state.ball.x, state.ball.y, state.ball.x + 10, state.ball.y + 20, coordenadas1, coordenadas2);
-                    break;
-                }
-            }
-            else if (state.ball.x < 60.0)
-            { // cuando se esta atacando
-                std::cout << "ATAQUE " << std::endl;
-                switch (attack)
-                {
-                case 1: //Esta más cerca el friend2 (Morado)
-                    //Se manda las coordenadas de la pelota al robot morado
-                    if (state.ball.y >= 63.0)
-                        posiciones(state.ball.x + 10.0, state.ball.y - 30.0, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-                    else
-                        posiciones(state.ball.x + 10.0, state.ball.y + 30.0, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-
-                    break;
-                case 0: //Esta más cerca el friend1
-                    if (state.ball.y > 63.0)
-                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10.0, state.ball.y - 30.0, coordenadas1, coordenadas2);
-                    else
-                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10.0, state.ball.y + 30.0, coordenadas1, coordenadas2);
-                    break;
-                }
-            }
-            else
-            {                   // cuando se esta en la media
-                switch (attack) // verde mas lejos
-                {
-                case 0:
-                    std::cout << "media -- morado" << std::endl;
-                    posiciones(state.ball.x, state.ball.y, state.teamYellow[2].x, state.teamYellow[2].y, coordenadas1, coordenadas2);
-                    break;
-
-                case 1: // verde mas lejos
-                    std::cout << "media -- verde" << std::endl;
-                    posiciones(state.teamYellow[1].x, state.teamYellow[1].y, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
-                    break;
-                }
-            }
-        }
-
-        //Coordenadas del portero -- INDEPENDIENTES
-        coordenadasPortero.first = 160.0;
-
-        if (state.ball.y <= limitesPorteria.first && state.ball.y >= limitesPorteria.second)
-        {
-            //coordenadasPortero.first = 0; //Poner la x
-            coordenadasPortero.second = state.ball.y;
-        }
-        else if (state.ball.y > limitesPorteria.first)
-        {
-            coordenadasPortero.second = limitesPorteria.first;
-        }
-        else
-        {
-            coordenadasPortero.second = limitesPorteria.second;
-        }
-
-        //Coordenadas de atacante y defensor, se mueven
-        //Robot Morado ataca
-
-        std::cout << "Distancia Enemigo1: " << distEnemy1 << std::endl;
-        std::cout << "Distancia Enemigo2: " << distEnemy2 << std::endl;
-        std::cout << "Distancia Friend1: " << distFriend1 << std::endl;
-        std::cout << "Distancia Friend2: " << distFriend2 << std::endl;
-        std::cout << "--------------------------------" << std::endl;
-        std::cout << "Coordenadas Portero X " << coordenadasPortero.first << " Coordenadas Portero Y " << coordenadasPortero.second << std::endl;
-        std::cout << "Coordenadas Amigo 1 " << coordenadas1.first << " Coordenadas Amigo Y " << coordenadas1.second << std::endl;
-        std::cout << "Coordenadas Amigo 2 " << coordenadas2.first << " Coordenadas Amigo Y " << coordenadas2.second << std::endl;
+        calcularDistanciasTotales();
+        act(gFriend, pFriend, rFriend, state);
 
         vss::Debug debug;
-        debug.finalPoses.push_back(Pose(coordenadasPortero.first, coordenadasPortero.second, 0));
-        debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
-        debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
+        debug.finalPoses.push_back(Pose(rFriend.x_dest, rFriend.y_dest, 0));
+        debug.finalPoses.push_back(Pose(gFriend.x_dest, gFriend.y_dest, 0));
+        debug.finalPoses.push_back(Pose(pFriend.x_dest, pFriend.y_dest, 0));
 
-        moveTo(0, 158, coordenadasPortero.second, velocities);
-        moveTo(1, coordenadas1.first, coordenadas1.second, velocities);
-        moveTo(2, coordenadas2.first, coordenadas2.second, velocities);
+        moveTo(0, rFriend.x_dest, rFriend.y_dest, velocities);
+        moveTo(1, gFriend.x_dest, gFriend.y_dest, velocities);
+        moveTo(2, pFriend.x_dest, pFriend.y_dest, velocities);
+
+        rFriend.print();
+        gFriend.print();
+        pFriend.print();
 
         send_commands(velocities);
 
