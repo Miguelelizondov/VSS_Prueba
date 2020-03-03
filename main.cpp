@@ -14,6 +14,8 @@
 #include <vector>
 #include <iostream>
 
+static const double pi = 3.141592;
+
 using namespace vss;
 
 IStateReceiver *stateReceiver;
@@ -22,16 +24,91 @@ IDebugSender *debugSender;
 
 State state;
 
-void send_commands()
+double wrapMax(double x, double max)
 {
-    Command command;
+    return fmod(max + fmod(x, max), max);
+}
+double wrapMinMax(double x, double min, double max)
+{
+    return min + wrapMax(x - min, max - min);
+}
+double distance(double x, double y, double x2, double y2)
+{
+    return 0.0113 * sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
+}
 
-    for (int i = 0; i < 3; i++)
+double s2 = 100;
+double s1 = 500;
+int min = 15;
+
+struct position
+{
+    double x;
+    double y;
+    double angle;
+    double speed;
+    double Aspeed;
+
+    position(double x_,
+             double y_)
     {
-        command.commands.push_back(WheelsCommand(10, -10));
+        x = x_;
+        y = -1.0 * y_;
+        angle = 0;
+        speed = 5;
+        Aspeed = 1;
     }
+    position(int id)
+    {
+        x = state.teamYellow[id].x;
+        y = -1.0 * state.teamYellow[id].y;
+        angle = ((int)(360 - state.teamYellow[id].angle) % 360) * pi / 180.0;
+        angle = wrapMinMax(angle, -pi, pi);
+        speed = 0.0113 * sqrt(state.teamYellow[id].speedX * state.teamYellow[id].speedX + state.teamYellow[id].speedY * state.teamYellow[id].speedY);
+        Aspeed = 1;
+    }
+    void print()
+    {
+        std::cout << "Pos X: " << x << std::endl;
+        std::cout << "Pos Y: " << y << std::endl;
+        std::cout << "Angle: " << angle << std::endl;
+        std::cout << "Speed: " << speed << std::endl;
+        std::cout << "Angular Speed: " << Aspeed << std::endl;
+    }
+    position(char p)
+    {
+        x = state.ball.x;
+        y = -1.0 * state.ball.y;
+        angle = 0;
+        speed = 5;
+        Aspeed = 0;
+    }
+};
 
-    commandSender->sendCommand(command);
+struct param
+{
+    double ts = 0.01;
+    double k[3] = {3.5, 4.5, 7.1};
+    double r = 0.016;
+    double l = 0.062;
+} rob;
+
+void send_commands(std::vector<std::pair<double, double>>);
+void send_debug();
+std::pair<double, double> calculate(position Cur, position Ref);
+double map(double val, double fromL, double fromH, double toL, double toH)
+{
+    return (val - fromL) * (toH - toL) / (fromH - fromL) + toL;
+}
+
+void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &velocities)
+{
+    position current(id);
+    position reference(x, y);
+    min = id == 0 ? 2 : 15;
+    std::pair<double, double> result = calculate(current, reference);
+    velocities[id] = result;
+    std::cout << id << ": " << result.first << " " << result.second << std::endl;
 }
 
 void irACoordenadas(std::pair<int, int> coordenadas, int i)
@@ -69,6 +146,58 @@ double calcularDistancia(double firstX, double secondX, double firstY, double se
     return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
 }
 
+std::pair<double, double> calculate(position Cur, position Ref)
+{
+
+    double difX = Ref.x - Cur.x;
+    double difY = Ref.y - Cur.y;
+
+    if (difX == 0 && difY == 0)
+        Ref.angle = 0;
+    else if (difX == 0)
+        Ref.angle = pi / 2.0;
+    else
+        Ref.angle = atan(difY / difX);
+
+    if (Cur.x > Ref.x)
+        Ref.angle += pi;
+
+    Ref.angle = wrapMinMax(Ref.angle, -pi, pi);
+
+    //Ref.speed = Cur.speed<0? -5: 5;
+    Ref.x += rob.ts * Ref.speed * cos(Ref.angle);
+    Ref.y += rob.ts * Ref.speed * sin(Ref.angle);
+
+    difX = Ref.x - Cur.x;
+    difY = Ref.y - Cur.y;
+
+    double e1 = 0.0113 * difX * (cos(Ref.angle) + sin(Ref.angle));
+    double e2 = 0.0113 * difY * (cos(Ref.angle) - sin(Ref.angle));
+    double e3 = wrapMinMax(Ref.angle - Cur.angle, -pi, pi);
+
+    double v = Ref.speed * cos(e3) + rob.k[0] * e1;
+    double w = Ref.Aspeed + rob.k[1] * Ref.speed * e2 * +rob.k[2] * Ref.speed * sin(e3);
+
+    Cur.speed = v;
+    Cur.Aspeed = w;
+
+    double right = (Cur.speed * 2.0 + Cur.Aspeed * rob.l) / (2.0 * rob.r);
+    double left = (Cur.speed * 2.0 - Cur.Aspeed * rob.l) / (2.0 * rob.r);
+
+    right = map(right, -s1, s1, -s2, s2);
+    left = map(left, -s1, s1, -s2, s2);
+
+    if (right > -min && right < min)
+        right = right < 0 ? -min : min;
+
+    if (left > -min && left < min)
+        left = left < 0 ? -min : min;
+
+    return std::make_pair(right, left);
+}
+
+std::vector<std::pair<double, double>> velocities;
+
 int main(int argc, char **argv)
 {
     srand(time(NULL));
@@ -79,6 +208,8 @@ int main(int argc, char **argv)
     stateReceiver->createSocket();
     commandSender->createSocket(TeamType::Yellow);
     debugSender->createSocket(TeamType::Yellow);
+
+    velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
 
     //Distancias
     double distEnemy1 = 0.0;
@@ -164,16 +295,16 @@ int main(int argc, char **argv)
                 case 1: //Esta más cerca el friend2 (Morado)
                     //Se manda las coordenadas de la pelota al robot morado
                     if (state.ball.y >= 63)
-                        posiciones(state.ball.x - 10, state.ball.y - 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                        posiciones(state.ball.x + 10, state.ball.y - 30, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
                     else
-                        posiciones(state.ball.x - 10, state.ball.y + 20, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
+                        posiciones(state.ball.x + 10, state.ball.y + 30, state.ball.x, state.ball.y, coordenadas1, coordenadas2);
 
                     break;
                 case 0: //Esta más cerca el friend1
                     if (state.ball.y > 63)
-                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 20, coordenadas1, coordenadas2);
+                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y - 30, coordenadas1, coordenadas2);
                     else
-                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 20, coordenadas1, coordenadas2);
+                        posiciones(state.ball.x, state.ball.y, state.ball.x - 10, state.ball.y + 30, coordenadas1, coordenadas2);
                     break;
                 }
             }
@@ -231,10 +362,11 @@ int main(int argc, char **argv)
         debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
 
-        Command command;
-        command.commands.push_back(WheelsCommand(1, 1));
-        command.commands.push_back(WheelsCommand(10, 10));
-        command.commands.push_back(WheelsCommand(10, 10));
+        moveTo(0, 158, coordenadasPortero.second, velocities);
+        moveTo(1, coordenadas1.first, coordenadas2.second, velocities);
+        moveTo(2, coordenadas2.first, coordenadas2.second, velocities);
+
+        send_commands(velocities);
 
         debugSender->sendDebug(debug);
     }
@@ -255,3 +387,15 @@ int main(int argc, char **argv)
     //debug.finalPoses.push_back(Pose(85 + rand() % 20, 65 + rand() % 20, rand() % 20));
     return 0;
 }
+/*
+
+Cosas que se pueden probar es considerar la velocidad de la pelota, para saber a donde va
+Incluir el algoritmo de juarez para que se mueva en el puto simulador
+Y ya no se me ocurre más a estas horas puta madre
+mejorar el posicionamiento de los robots cuando no tienen que ir a la pelota, 
+dar el angulo con el que tienen que llegar a la pelota.
+cambiar la forma en que decide a donde atacar en la portería 
+ver la forma de como girar y saber que se esta viendo a la pelota
+cosndierar las posiciones de los robots enemigos ??? 
+
+*/
