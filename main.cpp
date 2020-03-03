@@ -171,8 +171,10 @@ struct robot
         // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
         // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
     }
-    void portero()
+    void portero(State &state)
     {
+        x = state.teamYellow[id].x;
+        y = state.teamYellow[id].y;
         x_dest = 160;
         y_dest = (state.ball.y < 46) ? 46 : (state.ball.y > 84) ? 84 : state.ball.y;
     }
@@ -188,11 +190,11 @@ struct robot
     }
 };
 
-void act(robot &first, robot &second, robot &keeper, State state)
+void act(robot &first, robot &second, robot &keeper, State &state)
 {
     first.adjustVar(second.dBall, state);
     second.adjustVar(first.dBall, state);
-    keeper.portero();
+    keeper.portero(state);
 }
 
 double calcularDistancia(double x1, double x2, double y1, double y2)
