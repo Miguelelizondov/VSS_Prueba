@@ -109,19 +109,6 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
     std::cout << id << ": " << result.first << " " << result.second << std::endl;
 }
 
-double calcularDistancia(double x1, double x2, double y1, double y2)
-{
-    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
-}
-
-void calcularDistanciasTotales(robot &pEnemy, robot &gEnemy, robot &pFriend, robot &gFriend)
-{
-    pEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
-    gEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
-    pFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
-    gFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
-}
-
 std::vector<std::pair<double, double>> velocities;
 
 struct robot
@@ -206,6 +193,19 @@ void act(robot &first, robot &second, robot &keeper, State state)
     first.adjustVar(second.dBall, state);
     second.adjustVar(first.dBall, state);
     keeper.portero();
+}
+
+double calcularDistancia(double x1, double x2, double y1, double y2)
+{
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
+
+void calcularDistanciasTotales(robot &pEnemy, robot &gEnemy, robot &pFriend, robot &gFriend)
+{
+    pEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
+    gEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
+    pFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
+    gFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
 }
 
 robot pEnemy(2);
