@@ -387,7 +387,20 @@ int main(int argc, char **argv)
     //debug.finalPoses.push_back(Pose(85 + rand() % 20, 65 + rand() % 20, rand() % 20));
     return 0;
 }
+
+
+void send_commands(std::vector<std::pair<double,double>> vel){
+    Command command;
+   
+   for(int i = 0; i<3; i++)
+command.commands.push_back(WheelsCommand(vel[i].first, vel[i].second));
+    
+    commandSender->sendCommand(command);
+}
+
+
 /*
+
 
 Cosas que se pueden probar es considerar la velocidad de la pelota, para saber a donde va
 Incluir el algoritmo de juarez para que se mueva en el puto simulador
