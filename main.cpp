@@ -114,12 +114,12 @@ double calcularDistancia(double x1, double x2, double y1, double y2)
     return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
-void calcularDistanciasTotales()
+void calcularDistanciasTotales(robot &pEnemy, robot &gEnemy, robot &pFriend, robot &gFriend)
 {
-    pEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
-    gEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
-    pFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
-    gFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
+    pEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[2].x, state.ball.y, state.teamBlue[2].y);
+    gEnemy.dBall = calcularDistancia(state.ball.x, state.teamBlue[1].x, state.ball.y, state.teamBlue[1].y);
+    pFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[2].x, state.ball.y, state.teamYellow[2].y);
+    gFriend.dBall = calcularDistancia(state.ball.x, state.teamYellow[1].x, state.ball.y, state.teamYellow[1].y);
 }
 
 std::vector<std::pair<double, double>> velocities;
@@ -161,7 +161,7 @@ struct robot
             }
             else
             {
-                if (state.ball.x > 110.0 || state.ball.x < 60.0)
+                if (state.ball.x > 110.0 || state.ball.x < 60.0)
                 {
                     if (state.ball.y >= 63.0)
                     {
@@ -233,7 +233,7 @@ int main(int argc, char **argv)
         velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
         //std::cout << state << std::endl;
 
-        calcularDistanciasTotales();
+        calcularDistanciasTotales(pEnemy, gEnemy, pFriend, gFriend);
         act(gFriend, pFriend, rFriend, state);
 
         vss::Debug debug;
