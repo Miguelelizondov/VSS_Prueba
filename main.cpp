@@ -308,7 +308,7 @@ int main(int argc, char **argv)
         debug.finalPoses.push_back(Pose(coordenadas1.first, coordenadas1.second, 0));
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
 
-        moveTo(0, 158, coordenadasPortero.second, velocities);
+        moveTo(0, 158, coordentadasPortero.second, velocities);
         moveTo(1, state.ball.x, state.ball.y, velocities);
         moveTo(2, state.ball.x, state.ball.y, velocities);
 
