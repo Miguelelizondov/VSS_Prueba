@@ -286,8 +286,8 @@ int main(int argc, char **argv)
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
 
         moveTo(0, 158, coordenadasPortero.second, velocities);
-        moveTo(1, state.ball.x, state.ball.y, velocities);
-        moveTo(2, state.ball.x, state.ball.y, velocities);
+        moveTo(1, coordenadas1.first, coordenadas1.second, velocities);
+        moveTo(2, coordenadas2.first, coordenadas2.second, velocities);
 
         send_commands(velocities);
 
