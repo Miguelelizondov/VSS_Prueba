@@ -10,12 +10,9 @@
 #include <Communications/CommandSender.h>
 #include <Communications/DebugSender.h>
 #include "cstdlib"
-#include <cmath>
-#include <vector>
-#include <iostream>
+#include <math.h>
 
 static const double pi = 3.141592;
-
 using namespace vss;
 
 IStateReceiver *stateReceiver;
@@ -111,6 +108,8 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
     std::cout << id << ": " << result.first << " " << result.second << std::endl;
 }
 
+std::vector<std::pair<double, double>> velocities;
+
 void irACoordenadas(std::pair<int, int> coordenadas, int i)
 {
 
@@ -146,58 +145,6 @@ double calcularDistancia(double firstX, double secondX, double firstY, double se
     return sqrt((firstX - secondX) * (firstX - secondX) + (firstY - secondY) * (firstY - secondY));
 }
 
-std::pair<double, double> calculate(position Cur, position Ref)
-{
-
-    double difX = Ref.x - Cur.x;
-    double difY = Ref.y - Cur.y;
-
-    if (difX == 0 && difY == 0)
-        Ref.angle = 0;
-    else if (difX == 0)
-        Ref.angle = pi / 2.0;
-    else
-        Ref.angle = atan(difY / difX);
-
-    if (Cur.x > Ref.x)
-        Ref.angle += pi;
-
-    Ref.angle = wrapMinMax(Ref.angle, -pi, pi);
-
-    //Ref.speed = Cur.speed<0? -5: 5;
-    Ref.x += rob.ts * Ref.speed * cos(Ref.angle);
-    Ref.y += rob.ts * Ref.speed * sin(Ref.angle);
-
-    difX = Ref.x - Cur.x;
-    difY = Ref.y - Cur.y;
-
-    double e1 = 0.0113 * difX * (cos(Ref.angle) + sin(Ref.angle));
-    double e2 = 0.0113 * difY * (cos(Ref.angle) - sin(Ref.angle));
-    double e3 = wrapMinMax(Ref.angle - Cur.angle, -pi, pi);
-
-    double v = Ref.speed * cos(e3) + rob.k[0] * e1;
-    double w = Ref.Aspeed + rob.k[1] * Ref.speed * e2 * +rob.k[2] * Ref.speed * sin(e3);
-
-    Cur.speed = v;
-    Cur.Aspeed = w;
-
-    double right = (Cur.speed * 2.0 + Cur.Aspeed * rob.l) / (2.0 * rob.r);
-    double left = (Cur.speed * 2.0 - Cur.Aspeed * rob.l) / (2.0 * rob.r);
-
-    right = map(right, -s1, s1, -s2, s2);
-    left = map(left, -s1, s1, -s2, s2);
-
-    if (right > -min && right < min)
-        right = right < 0 ? -min : min;
-
-    if (left > -min && left < min)
-        left = left < 0 ? -min : min;
-
-    return std::make_pair(right, left);
-}
-
-std::vector<std::pair<double, double>> velocities;
-
 int main(int argc, char **argv)
 {
     srand(time(NULL));
@@ -208,8 +155,6 @@ int main(int argc, char **argv)
     stateReceiver->createSocket();
     commandSender->createSocket(TeamType::Yellow);
     debugSender->createSocket(TeamType::Yellow);
-
-    velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
 
     //Distancias
     double distEnemy1 = 0.0;
@@ -235,6 +180,7 @@ int main(int argc, char **argv)
     {
 
         state = stateReceiver->receiveState(FieldTransformationType::None);
+        velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
         std::cout << state << std::endl;
 
         //1 Verde, 2 morado
@@ -363,8 +309,8 @@ int main(int argc, char **argv)
         debug.finalPoses.push_back(Pose(coordenadas2.first, coordenadas2.second, 0));
 
         moveTo(0, 158, coordenadasPortero.second, velocities);
-        moveTo(1, coordenadas1.first, coordenadas2.second, velocities);
-        moveTo(2, coordenadas2.first, coordenadas2.second, velocities);
+        moveTo(1, state.ball.x, state.ball.y, velocities);
+        moveTo(2, state.ball.x, state.ball.y, velocities);
 
         send_commands(velocities);
 
@@ -387,20 +333,66 @@ int main(int argc, char **argv)
     //debug.finalPoses.push_back(Pose(85 + rand() % 20, 65 + rand() % 20, rand() % 20));
     return 0;
 }
-
-
-void send_commands(std::vector<std::pair<double,double>> vel){
+void send_commands(std::vector<std::pair<double, double>> vel)
+{
     Command command;
-   
-   for(int i = 0; i<3; i++)
-command.commands.push_back(WheelsCommand(vel[i].first, vel[i].second));
-    
+
+    for (int i = 0; i < 3; i++)
+        command.commands.push_back(WheelsCommand(vel[i].first, vel[i].second));
+
     commandSender->sendCommand(command);
 }
 
+std::pair<double, double> calculate(position Cur, position Ref)
+{
 
+    double difX = Ref.x - Cur.x;
+    double difY = Ref.y - Cur.y;
+
+    if (difX == 0 && difY == 0)
+        Ref.angle = 0;
+    else if (difX == 0)
+        Ref.angle = pi / 2.0;
+    else
+        Ref.angle = atan(difY / difX);
+
+    if (Cur.x > Ref.x)
+        Ref.angle += pi;
+
+    Ref.angle = wrapMinMax(Ref.angle, -pi, pi);
+
+    //Ref.speed = Cur.speed<0? -5: 5;
+    Ref.x += rob.ts * Ref.speed * cos(Ref.angle);
+    Ref.y += rob.ts * Ref.speed * sin(Ref.angle);
+
+    difX = Ref.x - Cur.x;
+    difY = Ref.y - Cur.y;
+
+    double e1 = 0.0113 * difX * (cos(Ref.angle) + sin(Ref.angle));
+    double e2 = 0.0113 * difY * (cos(Ref.angle) - sin(Ref.angle));
+    double e3 = wrapMinMax(Ref.angle - Cur.angle, -pi, pi);
+
+    double v = Ref.speed * cos(e3) + rob.k[0] * e1;
+    double w = Ref.Aspeed + rob.k[1] * Ref.speed * e2 * +rob.k[2] * Ref.speed * sin(e3);
+
+    Cur.speed = v;
+    Cur.Aspeed = w;
+
+    double right = (Cur.speed * 2.0 + Cur.Aspeed * rob.l) / (2.0 * rob.r);
+    double left = (Cur.speed * 2.0 - Cur.Aspeed * rob.l) / (2.0 * rob.r);
+
+    right = map(right, -s1, s1, -s2, s2);
+    left = map(left, -s1, s1, -s2, s2);
+
+    if (right > -min && right < min)
+        right = right < 0 ? -min : min;
+
+    if (left > -min && left < min)
+        left = left < 0 ? -min : min;
+
+    return std::make_pair(right, left);
+}
 /*
-
 
 Cosas que se pueden probar es considerar la velocidad de la pelota, para saber a donde va
 Incluir el algoritmo de juarez para que se mueva en el puto simulador
