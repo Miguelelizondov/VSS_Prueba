@@ -135,6 +135,7 @@ double calcularDistancia(double x1, double x2, double y1, double y2)
 void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num)
 {
 
+    std::cout << "a: " << a << " b: " << b << " c: " << c << std::endl;
     double discriminant;
     //cout << "Enter coefficients a, b and c: ";
 
@@ -162,7 +163,7 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     {
         //realPart = -b / (2 * a);
         //imaginaryPart = sqrt(-discriminant) / (2 * a);
-        /*out << "Roots are complex and different." << endl;
+        /*cout << "Roots are complex and different." << endl;
         cout << "x1 = " << realPart << "+" << imaginaryPart << "i" << endl;
         cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;*/
         num = 2;
@@ -193,7 +194,7 @@ struct robot
         hasBall = (dBall < 10.0 && (state.ball.x - 3) < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
-        velocidad = sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
+        velocidad = 20; //sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
 
         if (hasBall) // si se tiene la pelota y se esta atacando
         {
@@ -261,7 +262,7 @@ struct robot
     {
 
         double velPelota = sqrt((state.ball.speedY * state.ball.speedY) + (state.ball.speedX * state.ball.speedX));
-        if (veloPelota == 0)
+        if (velPelota == 0)
         {
             return 0.0;
         }
@@ -276,9 +277,9 @@ struct robot
         POINTFLOAT pelotaActual(state.ball.x, state.ball.y);
         POINTFLOAT velocidadActual(state.ball.x + state.ball.speedX, state.ball.y + state.ball.speedY);
 
-        a = this->velocidad * this->velocidad - velPelota * velPelota;
+        a = (this->velocidad * this->velocidad) - (velPelota * velPelota);
         b = 2 * velPelota * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * cos(AngleBetweenThreePoints(robotActual, pelotaActual, velocidadActual));
-        c = -calcularDistancia(state.ball.x, x, state.ball.y, y) * calcularDistancia(state.ball.x, x, state.ball.y, y);
+        c = -calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y);
 
         quadratic(a, b, c, time1, time2, num);
         switch (num)
