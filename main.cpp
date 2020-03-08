@@ -37,7 +37,7 @@ double distance(double x, double y, double x2, double y2)
 
 double s2 = 100;
 double s1 = 500;
-int min = 15;
+int min = 30;
 
 struct position
 {
@@ -211,7 +211,7 @@ struct robot
                 desTime = fierro();
                 std::cout << "Vel pelota x:   " << state.ball.speedX << std::endl;
                 std::cout << "Vel pelota y:   " << state.ball.speedY << std::endl;
-                std::cout << "Tiempo final:   " << desTime << std::endl;
+                //std::cout << "Tiempo final:   " << desTime << std::endl;
                 x_dest = state.ball.x + state.ball.speedX * desTime;
                 y_dest = state.ball.y + state.ball.speedY * desTime;
             }
@@ -283,10 +283,19 @@ struct robot
         c = -calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y);
 
         quadratic(a, b, c, time1, time2, num);
+        std::cout<<"time1: "<<time1<<" time 2: "<<time2<<std::endl;
         switch (num)
         {
         case 0:
-            finaltime = (abs(time1) < abs(time2)) ? time1 : time2;
+            if (time1>0 && time2>0){
+               finaltime = (time1<time2)?time1:time2;
+            }else if (time1>0){
+                finaltime = time1;
+            }else if (time2>0){
+                finaltime = time2;
+            }else{
+                finaltime = 0;
+            }
             break;
         case 1:
             if (time1 > 0)
@@ -298,6 +307,7 @@ struct robot
             finaltime = 0;
             break;
         }
+        std::cout<<"T FINAL :  "<<finaltime<<std::endl;
         return finaltime;
     }
 };
@@ -354,9 +364,9 @@ int main(int argc, char **argv)
         moveTo(1, gFriend.x_dest, gFriend.y_dest, velocities);
         moveTo(2, pFriend.x_dest, pFriend.y_dest, velocities);
 
-        rFriend.print();
-        gFriend.print();
-        pFriend.print();
+        //rFriend.print();
+        //gFriend.print();
+        //pFriend.print();
 
         send_commands(velocities);
 
