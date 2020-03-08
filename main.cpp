@@ -169,24 +169,6 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     }
 }
 
-struct ball
-{
-    double x;
-    double y;
-    double xBallSpeed;
-    double yBallSpeed;
-    double magVel;
-
-    void actVariables(State &state)
-    {
-        x = state.ball.x;
-        y = state.ball.y;
-        xBallSpeed = state.ball.speedX;
-        yBallSpeed = state.ball.speedY;
-        magVel = sqrt(x * x + y * y);
-    }
-};
-
 struct robot
 {
     double dBall;
@@ -276,8 +258,8 @@ struct robot
 
     double fierro()
     {
-        pelota.actVariables();
-        double velPelota = sqrt((pelota.yBallSpeed * pelota.yBallSpeed) + (pelota.xBallSpeed * pelota.xBallSpeed));
+
+        double velPelota = sqrt((state.ball.yBallSpeed * state.ball.yBallSpeed) + (state.ball.xBallSpeed * state.ball.xBallSpeed));
 
         double time1;
         double time2;
@@ -286,12 +268,12 @@ struct robot
         int num;
         double finaltime;
         POINTFLOAT robotActual(this->x, this->y);
-        POINTFLOAT pelotaActual(pelota.x, pelota.y);
-        POINTFLOAT velocidadActual(pelota.x + pelota.xBallSpeed, pelota.y + pelota.yBallSpeed);
+        POINTFLOAT pelotaActual(state.ball.x, state.ball.y);
+        POINTFLOAT velocidadActual(state.ball.x + state.ball.xBallSpeed, state.ball.y + state.ball.yBallSpeed);
 
         a = this->velocidad * this->velocidad - velPelota * velPelota;
-        b = 2 * velPelota * calcularDistancia(pelota.x, this->x, pelota.y, this->y) * cos(AngleBetweenThreePoints(robotActual, pelotaActual, velocidadActual));
-        c = -calcularDistancia(pelota.x, x, pelota.y, y) * calcularDistancia(pelota.x, x, pelota.y, y);
+        b = 2 * velPelota * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * cos(AngleBetweenThreePoints(robotActual, pelotaActual, velocidadActual));
+        c = -calcularDistancia(state.ball.x, x, state.ball.y, y) * calcularDistancia(state.ball.x, x, state.ball.y, y);
 
         quadratic(a, b, c, time1, time2, num);
         switch (num)
@@ -331,7 +313,6 @@ robot rEnemy(0);
 robot pFriend(2); // 2
 robot gFriend(1); // 1
 robot rFriend(0);
-ball pelota;
 
 int main(int argc, char **argv)
 {
