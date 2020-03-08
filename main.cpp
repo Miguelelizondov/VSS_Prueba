@@ -106,7 +106,7 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
     min = id == 0 ? 2 : 15;
     std::pair<double, double> result = calculate(current, reference);
     velocities[id] = result;
-    std::cout << id << ": " << result.first << " " << result.second << std::endl;
+    //std::cout << id << ": " << result.first << " " << result.second << std::endl;
 }
 
 std::vector<std::pair<double, double>> velocities;
@@ -190,6 +190,7 @@ struct robot
 
     void adjustVar(double dist, State &state)
     {
+        this->state = state;
         attack = (dBall < dist) ? true : false;                                                           // si le corresponde atacar
         hasBall = (dBall < 10.0 && (state.ball.x - 3) < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
@@ -285,10 +286,13 @@ struct robot
         switch (num)
         {
         case 0:
-            finaltime = (time1 < time2) ? time1 : time2;
+            finaltime = (abs(time1) < abs(time2)) ? time1 : time2;
             break;
         case 1:
-            finaltime = time1;
+            if (time1 > 0)
+            {
+                finaltime = time1;
+            }
             break;
         case 2:
             finaltime = 0;
