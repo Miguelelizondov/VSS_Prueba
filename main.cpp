@@ -193,6 +193,7 @@ struct robot
         hasBall = (dBall < 10.0 && (state.ball.x - 3) < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
+        velocidad = sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
 
         if (hasBall) // si se tiene la pelota y se esta atacando
         {
@@ -260,6 +261,10 @@ struct robot
     {
 
         double velPelota = sqrt((state.ball.speedY * state.ball.speedY) + (state.ball.speedX * state.ball.speedX));
+        if (veloPelota == 0)
+        {
+            return 0.0;
+        }
 
         double time1;
         double time2;
