@@ -135,7 +135,7 @@ double calcularDistancia(double x1, double x2, double y1, double y2)
 void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num)
 {
 
-    double discriminant, realPart, imaginaryPart;
+    double discriminant;
     //cout << "Enter coefficients a, b and c: ";
 
     discriminant = b * b - 4 * a * c;
@@ -160,8 +160,8 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
 
     else
     {
-        realPart = -b / (2 * a);
-        imaginaryPart = sqrt(-discriminant) / (2 * a);
+        //realPart = -b / (2 * a);
+        //imaginaryPart = sqrt(-discriminant) / (2 * a);
         /*out << "Roots are complex and different." << endl;
         cout << "x1 = " << realPart << "+" << imaginaryPart << "i" << endl;
         cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;*/
@@ -259,7 +259,7 @@ struct robot
     double fierro()
     {
 
-        double velPelota = sqrt((state.ball.yBallSpeed * state.ball.yBallSpeed) + (state.ball.xBallSpeed * state.ball.xBallSpeed));
+        double velPelota = sqrt((state.ball.speedY * state.ball.speedY) + (state.ball.speedX * state.ball.speedX));
 
         double time1;
         double time2;
@@ -269,7 +269,7 @@ struct robot
         double finaltime;
         POINTFLOAT robotActual(this->x, this->y);
         POINTFLOAT pelotaActual(state.ball.x, state.ball.y);
-        POINTFLOAT velocidadActual(state.ball.x + state.ball.xBallSpeed, state.ball.y + state.ball.yBallSpeed);
+        POINTFLOAT velocidadActual(state.ball.x + state.ball.speedX, state.ball.y + state.ball.speedY);
 
         a = this->velocidad * this->velocidad - velPelota * velPelota;
         b = 2 * velPelota * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * cos(AngleBetweenThreePoints(robotActual, pelotaActual, velocidadActual));
