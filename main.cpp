@@ -111,9 +111,82 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
 
 std::vector<std::pair<double, double>> velocities;
 
+struct POINTFLOAT
+{
+    double x;
+    double y;
+
+    POINTFLOAT(double x, double y)
+    {
+        this->x = x;
+        this->y = y;
+    }
+};
+
+double AngleBetweenThreePoints(POINTFLOAT pointA, POINTFLOAT pointB, POINTFLOAT pointC)
+{
+    return (atan2((pointB.x - pointC.x), (pointB.y - pointC.y)) - atan2((pointB.x - pointA.x), (pointB.y - pointA.y)));
+}
+
+void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num)
+{
+
+    double discriminant, realPart, imaginaryPart;
+    cout << "Enter coefficients a, b and c: ";
+
+    discriminant = b * b - 4 * a * c;
+
+    if (discriminant > 0)
+    {
+        x1 = (-b + sqrt(discriminant)) / (2 * a);
+        x2 = (-b - sqrt(discriminant)) / (2 * a);
+        cout << "Roots are real and different." << endl;
+        cout << "x1 = " << x1 << endl;
+        cout << "x2 = " << x2 << endl;
+        num = 0;
+    }
+
+    else if (discriminant == 0)
+    {
+        cout << "Roots are real and same." << endl;
+        x1 = (-b + sqrt(discriminant)) / (2 * a);
+        cout << "x1 = x2 =" << x1 << endl;
+        num = 1;
+    }
+
+    else
+    {
+        realPart = -b / (2 * a);
+        imaginaryPart = sqrt(-discriminant) / (2 * a);
+        cout << "Roots are complex and different." << endl;
+        cout << "x1 = " << realPart << "+" << imaginaryPart << "i" << endl;
+        cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;
+        num = 2;
+    }
+}
+
+struct ball
+{
+    double x;
+    double y;
+    double xBallSpeed;
+    double yBallSpeed;
+    double magVel;
+
+    void actVariables(State &state)
+    {
+        x = state.ball.x;
+        y = state.ball.y;
+        xBallSpeed = state.ball.speedX;
+        yBallSpeed = state.ball.speedY;
+        magVel = sqrt(x * x + y * y);
+    }
+};
+
 struct robot
 {
     double dBall;
+    double velocidad;
     bool attack;
     bool hasBall;
     double x;
@@ -122,6 +195,7 @@ struct robot
     double y_dest;
     int id;
     State state;
+    double desTime;
     robot(int id)
     {
         this->id = id;
@@ -129,22 +203,26 @@ struct robot
 
     void adjustVar(double dist, State &state)
     {
-        attack = (dBall < dist) ? true : false;                                                     // si le corresponde atacar
-        hasBall = (dBall < 10.0 && state.ball.x < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        attack = (dBall < dist) ? true : false;                                                           // si le corresponde atacar
+        hasBall = (dBall < 10.0 && (state.ball.x - 3) < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
 
         if (hasBall) // si se tiene la pelota y se esta atacando
         {
             x_dest = 10;
-            y_dest = 130 - state.teamBlue[0].y;
+            // poner logica de si esta en medio decida
+            y_dest = (y_dest > 60 && y_dest < 70) ? (55) : 130 - state.teamBlue[0].y;
         }
+
         else // si no se tiene la pelota
         {
             if (attack) // si no se tiene la pelota, pero se esta atacando
             {
-                x_dest = state.ball.x;
-                y_dest = state.ball.y;
+                desTime = fierro();
+
+                x_dest = state.ball.x + state.ball.speedX * desTime;
+                y_dest = state.ball.y + state.ball.speedY * desTime;
             }
             else
             {
@@ -168,9 +246,10 @@ struct robot
                 }
             }
         }
-        // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
-        // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
     }
+    // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
+    // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
+
     void portero(State &state)
     {
         x = state.teamYellow[id].x;
@@ -187,6 +266,42 @@ struct robot
         std::cout << "X Dest: " << x_dest << std::endl;
         std::cout << "Y Dest: " << y_dest << std::endl;
         std::cout << "Ball Distance: " << dBall << std::endl;
+    }
+
+    double fierro()
+    {
+        pelota.actVariables();
+        double angle = atan(pelota.yBallSpeed / pelota.xBallSpeed);
+        double velPelota = sqrt((pelota.yBallSpeed * pelota.yBallSpeed) + (pelota.xBallSpeed * pelota.xBallSpeed));
+
+        double time1;
+        double time2;
+
+        double a, b, c;
+        int num;
+        double finaltime;
+        POINTFLOAT robotActual(this->x, this->y);
+        POINTFLOAT pelotaActual(pelota.x, pelota.y);
+        POINTFLOAT velocidadActual(pelota.x + pelota.xBallSpeed, pelota.y + pelota.yBallSpeed);
+
+        a = this->velocidad * this->velocidad - velPelota * velPelota;
+        b = 2 * velPelota * calcularDistancia(pelota.x, this->x, pelota.y, this->y) * cos(AngleBetweenThreePoints(robotActual, pelotaActual, velocidadActual));
+        c = -calcularDistancia(pelota.x, x, pelota.y, y) * calcularDistancia(pelota.x, x, pelota.y, y);
+
+        quadratic(a, b, c, time1, time2, num);
+        switch (num)
+        {
+        case 0:
+            finaltime = (time1 < time2) ? time1 : time2;
+            break;
+        case 1:
+            finaltime = time1;
+            break;
+        case 2:
+            finaltime = 0;
+            break;
+        }
+        return finaltime;
     }
 };
 
@@ -216,6 +331,7 @@ robot rEnemy(0);
 robot pFriend(2); // 2
 robot gFriend(1); // 1
 robot rFriend(0);
+ball pelota;
 
 int main(int argc, char **argv)
 {
