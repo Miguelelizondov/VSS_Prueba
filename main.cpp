@@ -220,7 +220,9 @@ struct robot
             if (attack) // si no se tiene la pelota, pero se esta atacando
             {
                 desTime = fierro();
-
+                std::cout << "Vel pelota x:   " << state.ball.speedX << std::endl;
+                std::cout << "Vel pelota y:   " << state.ball.speedY << std::endl;
+                std::cout << "Tiempo final:   " << desTime << std::endl;
                 x_dest = state.ball.x + state.ball.speedX * desTime;
                 y_dest = state.ball.y + state.ball.speedY * desTime;
             }
