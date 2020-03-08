@@ -127,12 +127,16 @@ double AngleBetweenThreePoints(POINTFLOAT pointA, POINTFLOAT pointB, POINTFLOAT 
 {
     return (atan2((pointB.x - pointC.x), (pointB.y - pointC.y)) - atan2((pointB.x - pointA.x), (pointB.y - pointA.y)));
 }
+double calcularDistancia(double x1, double x2, double y1, double y2)
+{
+    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+}
 
 void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num)
 {
 
     double discriminant, realPart, imaginaryPart;
-    cout << "Enter coefficients a, b and c: ";
+    //cout << "Enter coefficients a, b and c: ";
 
     discriminant = b * b - 4 * a * c;
 
@@ -140,17 +144,17 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     {
         x1 = (-b + sqrt(discriminant)) / (2 * a);
         x2 = (-b - sqrt(discriminant)) / (2 * a);
-        cout << "Roots are real and different." << endl;
+        /*cout << "Roots are real and different." << endl;
         cout << "x1 = " << x1 << endl;
-        cout << "x2 = " << x2 << endl;
+        cout << "x2 = " << x2 << endl;*/
         num = 0;
     }
 
     else if (discriminant == 0)
     {
-        cout << "Roots are real and same." << endl;
+        //cout << "Roots are real and same." << endl;
         x1 = (-b + sqrt(discriminant)) / (2 * a);
-        cout << "x1 = x2 =" << x1 << endl;
+        //cout << "x1 = x2 =" << x1 << endl;
         num = 1;
     }
 
@@ -158,9 +162,9 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     {
         realPart = -b / (2 * a);
         imaginaryPart = sqrt(-discriminant) / (2 * a);
-        cout << "Roots are complex and different." << endl;
+        /*out << "Roots are complex and different." << endl;
         cout << "x1 = " << realPart << "+" << imaginaryPart << "i" << endl;
-        cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;
+        cout << "x2 = " << realPart << "-" << imaginaryPart << "i" << endl;*/
         num = 2;
     }
 }
@@ -273,7 +277,6 @@ struct robot
     double fierro()
     {
         pelota.actVariables();
-        double angle = atan(pelota.yBallSpeed / pelota.xBallSpeed);
         double velPelota = sqrt((pelota.yBallSpeed * pelota.yBallSpeed) + (pelota.xBallSpeed * pelota.xBallSpeed));
 
         double time1;
@@ -312,11 +315,6 @@ void act(robot &first, robot &second, robot &keeper, State &state)
     first.adjustVar(second.dBall, state);
     second.adjustVar(first.dBall, state);
     keeper.portero(state);
-}
-
-double calcularDistancia(double x1, double x2, double y1, double y2)
-{
-    return sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
 }
 
 void calcularDistanciasTotales(robot &pEnemy, robot &gEnemy, robot &pFriend, robot &gFriend)
