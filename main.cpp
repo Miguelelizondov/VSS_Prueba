@@ -283,17 +283,24 @@ struct robot
         c = -calcularDistancia(state.ball.x, this->x, state.ball.y, this->y) * calcularDistancia(state.ball.x, this->x, state.ball.y, this->y);
 
         quadratic(a, b, c, time1, time2, num);
-        std::cout<<"time1: "<<time1<<" time 2: "<<time2<<std::endl;
+        std::cout << "time1: " << time1 << " time 2: " << time2 << std::endl;
         switch (num)
         {
         case 0:
-            if (time1>0 && time2>0){
-               finaltime = (time1<time2)?time1:time2;
-            }else if (time1>0){
+            if (time1 > 0 && time2 > 0)
+            {
+                finaltime = (time1 < time2) ? time1 : time2;
+            }
+            else if (time1 > 0)
+            {
                 finaltime = time1;
-            }else if (time2>0){
+            }
+            else if (time2 > 0)
+            {
                 finaltime = time2;
-            }else{
+            }
+            else
+            {
                 finaltime = 0;
             }
             break;
@@ -307,7 +314,7 @@ struct robot
             finaltime = 0;
             break;
         }
-        std::cout<<"T FINAL :  "<<finaltime<<std::endl;
+        std::cout << "T FINAL :  " << finaltime << std::endl;
         return finaltime;
     }
 };
