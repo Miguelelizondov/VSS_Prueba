@@ -170,6 +170,13 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     }
 }
 
+enum Ataque = {
+    arriba,
+    medio,
+    abajo,
+    libre};
+Ataque ataque;
+
 struct robot
 {
     double dBall;
@@ -201,7 +208,47 @@ struct robot
         {
             x_dest = 10;
             // poner logica de si esta en medio decida
-            y_dest = (y_dest > 60 && y_dest < 70) ? (50) : 130 - state.teamBlue[0].y;
+            // y_dest = (y_dest > 60 && y_dest < 70) ? (50) : 130 - state.teamBlue[0].y;
+
+            //busqueda del portero enemigo
+            for (int i = 0; i < 3; i++)
+            {
+                if (state.teamBlue[i].x < 15)
+                { // si hay algun robot en la porteria
+                    if (state.teamBlue[i].y < 59 && state.teamBlue[i].y >= 46)
+                    { // parte de arriba de la porteria
+                        ataque = arriba;
+                    }
+                    else if (state.teamBlue[i].y < 72 && state.teamBlue[i].y >= 59)
+                    {
+                        ataque = medio;
+                    }
+                    else if (state.teamBlue[i].y <= 84 && state.teamBlue[i].y >= 72)
+                    {
+                        ataque = abajo;
+                    }
+                    else
+                    {
+                        ataque = libre;
+                    }
+                }
+            }
+
+            switch (ataque)
+            {
+            case arriba:
+                y_dest = 72;
+                break;
+            case medio:
+                y_dest = (this->y < 62) ? 53 : 77;
+                break;
+            case abajo:
+                y_dest = 53;
+                break;
+            case libre:
+                y_dest = (this->y < 62) ? 53 : 77;
+                break;
+            }
         }
 
         else // si no se tiene la pelota
