@@ -170,11 +170,13 @@ void quadratic(double &a, double &b, double &c, double &x1, double &x2, int &num
     }
 }
 
-enum Ataque = {
+enum Ataque
+{
     arriba,
     medio,
     abajo,
-    libre};
+    libre
+};
 Ataque ataque;
 
 struct robot
@@ -194,12 +196,18 @@ struct robot
     {
         this->id = id;
     }
-
+    void checarLimites()
+    {
+        x_dest = (x_dest < 0) ? 0 : x_dest;
+        x_dest = (x_dest > 160) ? 160 : x_dest;
+        y_dest = (y_dest < 0) ? 0 : y_dest;
+        y_dest = (y_dest > 126) ? 126 : y_dest;
+    }
     void adjustVar(double dist, State &state)
     {
         this->state = state;
-        attack = (dBall < dist) ? true : false;                                                           // si le corresponde atacar
-        hasBall = (dBall < 10.0 && (state.ball.x - 3) < state.teamYellow[id].x && attack) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        attack = (dBall < dist) ? true : false;                                                                                                                                // si le corresponde atacar
+        hasBall = (dBall < 10.0 && (state.ball.x) < state.teamYellow[id].x && attack && !(state.teamYellow[id].angle > 90 && state.teamYelow[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
         velocidad = 20; //sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
@@ -290,6 +298,7 @@ struct robot
                 }
             }
         }
+        checarLimites();
     }
     // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
     // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
@@ -368,6 +377,7 @@ struct robot
             break;
         }
         std::cout << "T FINAL :  " << finaltime << std::endl;
+        finaltime = (finaltime > 8) ? 5 : finaltime;
         return finaltime;
     }
 };
