@@ -206,8 +206,8 @@ struct robot
     void adjustVar(double dist, State &state)
     {
         this->state = state;
-        attack = (dBall < dist) ? true : false;                                                                                                                                // si le corresponde atacar
-        hasBall = (dBall < 10.0 && (state.ball.x) < state.teamYellow[id].x && attack && !(state.teamYellow[id].angle > 90 && state.teamYelow[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        attack = (dBall < dist) ? true : false;                                                                                                                                 // si le corresponde atacar
+        hasBall = (dBall < 10.0 && (state.ball.x) < state.teamYellow[id].x && attack && !(state.teamYellow[id].angle > 90 && state.teamYellow[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
         velocidad = 20; //sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
@@ -270,7 +270,7 @@ struct robot
                 x_dest = state.ball.x + state.ball.speedX * desTime;
                 y_dest = state.ball.y + state.ball.speedY * desTime;
 
-                if (dBall < 17)
+                if (dBall < 10)
                 {
                     x_dest = state.ball.x;
                     y_dest = state.ball.y;
@@ -300,6 +300,103 @@ struct robot
         }
         checarLimites();
     }
+    void adjustVar2(double dist, State &state)
+    {
+        this->state = state;
+        attack = (dBall < dist) ? true : false;                                                                                                                                // si le corresponde atacar
+        hasBall = (dBall < 10.0 && (state.ball.x) > state.teamYellow[id].x && attack && (state.teamYellow[id].angle > 90 && state.teamYellow[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        x = state.teamYellow[id].x;
+        y = state.teamYellow[id].y;
+        velocidad = 20; //sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
+
+        if (hasBall) // si se tiene la pelota y se esta atacando
+        {
+            x_dest = 150;
+            // poner logica de si esta en medio decida
+            // y_dest = (y_dest > 60 && y_dest < 70) ? (50) : 130 - state.teamBlue[0].y;
+
+            //busqueda del portero enemigo
+            for (int i = 0; i < 3; i++)
+            {
+                if (state.teamBlue[i].x > 145)
+                { // si hay algun robot en la porteria
+                    if (state.teamBlue[i].y < 59 && state.teamBlue[i].y >= 46)
+                    { // parte de arriba de la porteria
+                        ataque = arriba;
+                    }
+                    else if (state.teamBlue[i].y < 72 && state.teamBlue[i].y >= 59)
+                    {
+                        ataque = medio;
+                    }
+                    else if (state.teamBlue[i].y <= 84 && state.teamBlue[i].y >= 72)
+                    {
+                        ataque = abajo;
+                    }
+                    else
+                    {
+                        ataque = libre;
+                    }
+                }
+            }
+
+            switch (ataque)
+            {
+            case arriba:
+                y_dest = 72;
+                break;
+            case medio:
+                y_dest = (this->y < 62) ? 53 : 77;
+                break;
+            case abajo:
+                y_dest = 53;
+                break;
+            case libre:
+                y_dest = (this->y < 62) ? 53 : 77;
+                break;
+            }
+        }
+
+        else // si no se tiene la pelota
+        {
+            if (attack) // si no se tiene la pelota, pero se esta atacando
+            {
+                desTime = fierro();
+                std::cout << "Vel pelota x:   " << state.ball.speedX << std::endl;
+                std::cout << "Vel pelota y:   " << state.ball.speedY << std::endl;
+                //std::cout << "Tiempo final:   " << desTime << std::endl;
+                x_dest = state.ball.x + state.ball.speedX * desTime;
+                y_dest = state.ball.y + state.ball.speedY * desTime;
+
+                if (dBall < 10)
+                {
+                    x_dest = state.ball.x;
+                    y_dest = state.ball.y;
+                }
+            }
+            else
+            {
+                if (state.ball.x > 110.0 || state.ball.x < 60.0)
+                {
+                    if (state.ball.y >= 63.0)
+                    {
+                        x_dest = state.ball.x - 10.0;
+                        y_dest = state.ball.y - 30.0;
+                    }
+                    else
+                    {
+                        x_dest = state.ball.x - 10.0;
+                        y_dest = state.ball.y + 30.0;
+                    }
+                }
+                else
+                {
+                    x_dest = x;
+                    y_dest = y;
+                }
+            }
+        }
+        checarLimites();
+    }
     // x_dest = hasBall ? 10.0 : (attack) ? (state.ball.x > 110.0) ? state.ball.x : (state.ball.x < 60) ? state.ball.x; // si le corresponde atacar y tiene la pelota // si le corresponde atacar pero no tiene pelota // si no tiene pelota ni le corresponde atacar
     // y_dest = hasBall ? (130.0 - state.teamBlue[0].y) : state.teamYellow[id].y
 
@@ -308,6 +405,13 @@ struct robot
         x = state.teamYellow[id].x;
         y = state.teamYellow[id].y;
         x_dest = 160;
+        y_dest = (state.ball.y < 46) ? 46 : (state.ball.y > 84) ? 84 : state.ball.y;
+    }
+    void portero2(State &state)
+    {
+        x = state.teamYellow[id].x;
+        y = state.teamYellow[id].y;
+        x_dest = 5;
         y_dest = (state.ball.y < 46) ? 46 : (state.ball.y > 84) ? 84 : state.ball.y;
     }
     void print()
@@ -376,17 +480,28 @@ struct robot
             finaltime = 0;
             break;
         }
-        std::cout << "T FINAL :  " << finaltime << std::endl;
+
         finaltime = (finaltime > 8) ? 5 : finaltime;
+        std::cout << "T FINAL :  " << finaltime << std::endl;
         return finaltime;
     }
 };
 
-void act(robot &first, robot &second, robot &keeper, State &state)
+void act(robot &first, robot &second, robot &keeper, State &state, bool x)
 {
-    first.adjustVar(second.dBall, state);
-    second.adjustVar(first.dBall, state);
-    keeper.portero(state);
+    if (x)
+    {
+
+        first.adjustVar(second.dBall, state);
+        second.adjustVar(first.dBall, state);
+        keeper.portero(state);
+    }
+    else
+    {
+        first.adjustVar2(second.dBall, state);
+        second.adjustVar2(first.dBall, state);
+        keeper.portero2(state);
+    }
 }
 
 void calcularDistanciasTotales(robot &pEnemy, robot &gEnemy, robot &pFriend, robot &gFriend)
@@ -410,37 +525,64 @@ int main(int argc, char **argv)
     stateReceiver = new StateReceiver();
     commandSender = new CommandSender();
     debugSender = new DebugSender();
+    stateReceiver2 = new StateReceiver();
+    commandSender2 = new CommandSender();
+    debugSender2 = new DebugSender();
 
     stateReceiver->createSocket();
     commandSender->createSocket(TeamType::Yellow);
     debugSender->createSocket(TeamType::Yellow);
+    stateReceiver2->createSocket();
+    commandSender2->createSocket(TeamType::Blue);
+    debugSender2->createSocket(TeamType::Blue);
 
     while (true)
     {
 
         state = stateReceiver->receiveState(FieldTransformationType::None);
+        state2 = stateReceiver2->receiveState(FieldTransformationType::None);
         velocities = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
+        velocities2 = {std::make_pair(0, 0), std::make_pair(0, 0), std::make_pair(0, 0)};
         //std::cout << state << std::endl;
 
         calcularDistanciasTotales(pEnemy, gEnemy, pFriend, gFriend);
-        act(gFriend, pFriend, rFriend, state);
+        act(gFriend, pFriend, rFriend, state, 1);
+        act(gEnemy, pEnemy, rEnemy, state, 0);
 
         vss::Debug debug;
+        vss::Debug debug2;
+        vss::Command command;
+        vss::Command command2;
         debug.finalPoses.push_back(Pose(rFriend.x_dest, rFriend.y_dest, 0));
         debug.finalPoses.push_back(Pose(gFriend.x_dest, gFriend.y_dest, 0));
         debug.finalPoses.push_back(Pose(pFriend.x_dest, pFriend.y_dest, 0));
+        debug2.finalPoses.push_back(Pose(rEnemy.x_dest, rEnemy.y_dest, 0));
+        debug2.finalPoses.push_back(Pose(gEnemy.x_dest, gEnemy.y_dest, 0));
+        debug2.finalPoses.push_back(Pose(pEnemy.x_dest, pEnemy.y_dest, 0));
 
         moveTo(0, rFriend.x_dest, rFriend.y_dest, velocities);
         moveTo(1, gFriend.x_dest, gFriend.y_dest, velocities);
         moveTo(2, pFriend.x_dest, pFriend.y_dest, velocities);
+        moveTo(0, rEnemy.x_dest, rEnemy.y_dest, velocities2);
+        moveTo(1, gEnemy.x_dest, gEnemy.y_dest, velocities2);
+        moveTo(2, pEnemy.x_dest, pEnemy.y_dest, velocities2);
 
         //rFriend.print();
         //gFriend.print();
         //pFriend.print();
 
-        send_commands(velocities);
+        //send_commands(velocities);
+        //send_commands(velocities2);
+        for (int i = 0; i < 3; i++)
+            command.commands.push_back(WheelsCommand(velocities[i].first, velocities[i].second));
 
+        for (int i = 0; i < 3; i++)
+            command2.commands.push_back(WheelsCommand(velocities2[i].first, velocities2[i].second));
+
+        commandSender->sendCommand(command);
+        commandSender2->sendCommand(command2);
         debugSender->sendDebug(debug);
+        debugSender2->sendDebug(debug2);
     }
 
     // Checar los dos robots contrincantes, sacar su distancia de ellos hacia la pelota
