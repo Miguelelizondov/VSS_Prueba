@@ -552,7 +552,7 @@ int main(int argc, char **argv)
 
         calcularDistanciasTotales(pEnemy, gEnemy, pFriend, gFriend);
         act(gFriend, pFriend, rFriend, state, 1);
-        act(gEnemy, pEnemy, rEnemy, state2, 0);
+        act(gEnemy, pEnemy, rEnemy, state, 0);
 
         vss::Debug debug;
         vss::Debug debug2;
