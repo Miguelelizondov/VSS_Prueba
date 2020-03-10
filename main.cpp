@@ -24,6 +24,7 @@ ICommandSender *commandSender2;
 IDebugSender *debugSender2;
 
 State state;
+State state2;
 
 double wrapMax(double x, double max)
 {
@@ -551,7 +552,7 @@ int main(int argc, char **argv)
 
         calcularDistanciasTotales(pEnemy, gEnemy, pFriend, gFriend);
         act(gFriend, pFriend, rFriend, state, 1);
-        act(gEnemy, pEnemy, rEnemy, state, 0);
+        act(gEnemy, pEnemy, rEnemy, state2, 0);
 
         vss::Debug debug;
         vss::Debug debug2;
@@ -564,13 +565,16 @@ int main(int argc, char **argv)
         debug2.finalPoses.push_back(Pose(gEnemy.x_dest, gEnemy.y_dest, 0));
         debug2.finalPoses.push_back(Pose(pEnemy.x_dest, pEnemy.y_dest, 0));
 
-        moveTo(0, rFriend.x_dest, rFriend.y_dest, velocities);
+        /*moveTo(0, rFriend.x_dest, rFriend.y_dest, velocities);
         moveTo(1, gFriend.x_dest, gFriend.y_dest, velocities);
-        moveTo(2, pFriend.x_dest, pFriend.y_dest, velocities);
+        moveTo(2, pFriend.x_dest, pFriend.y_dest, velocities);*/
         moveTo(0, rEnemy.x_dest, rEnemy.y_dest, velocities2);
         moveTo(1, gEnemy.x_dest, gEnemy.y_dest, velocities2);
         moveTo(2, pEnemy.x_dest, pEnemy.y_dest, velocities2);
 
+        rEnemy.print();
+        gFriend.print();
+        pFriend.print();
         //rFriend.print();
         //gFriend.print();
         //pFriend.print();
