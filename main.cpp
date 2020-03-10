@@ -19,6 +19,9 @@ using namespace vss;
 IStateReceiver *stateReceiver;
 ICommandSender *commandSender;
 IDebugSender *debugSender;
+IStateReceiver *stateReceiver2;
+ICommandSender *commandSender2;
+IDebugSender *debugSender2;
 
 State state;
 
@@ -110,6 +113,7 @@ void moveTo(int id, double x, double y, std::vector<std::pair<double, double>> &
 }
 
 std::vector<std::pair<double, double>> velocities;
+std::vector<std::pair<double, double>> velocities2;
 
 struct POINTFLOAT
 {
