@@ -307,10 +307,10 @@ struct robot
     void adjustVar2(double dist, State &state)
     {
         this->state = state;
-        attack = (dBall < dist) ? true : false;                                                                                                                                // si le corresponde atacar
-        hasBall = (dBall < 10.0 && (state.ball.x) > state.teamYellow[id].x && attack && (state.teamYellow[id].angle > 90 && state.teamYellow[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
-        x = state.teamYellow[id].x;
-        y = state.teamYellow[id].y;
+        attack = (dBall < dist) ? true : false;                                                                                                                          // si le corresponde atacar
+        hasBall = (dBall < 10.0 && (state.ball.x) > state.teamBlue[id].x && attack && (state.teamBlue[id].angle > 90 && state.teamBlue[id].angle < 270)) ? true : false; // si tiene la pelota enfrente y le correspendo atacar
+        x = state.teamBlue[id].x;
+        y = state.teamBlue[id].y;
         velocidad = 20; //sqrt((state.teamYellow[id].speedX * state.teamYellow[id].speedX) + (state.teamYellow[id].speedY * state.teamYellow[id].speedY)); // checar si poner una velocidad constante
 
         if (hasBall) // si se tiene la pelota y se esta atacando
@@ -322,17 +322,17 @@ struct robot
             //busqueda del portero enemigo
             for (int i = 0; i < 3; i++)
             {
-                if (state.teamBlue[i].x > 145)
+                if (state.teamYellow[i].x > 145)
                 { // si hay algun robot en la porteria
-                    if (state.teamBlue[i].y < 59 && state.teamBlue[i].y >= 46)
+                    if (state.teamYellow[i].y < 59 && state.teamYellow[i].y >= 46)
                     { // parte de arriba de la porteria
                         ataque = arriba;
                     }
-                    else if (state.teamBlue[i].y < 72 && state.teamBlue[i].y >= 59)
+                    else if (state.teamYellow[i].y < 72 && state.teamYellow[i].y >= 59)
                     {
                         ataque = medio;
                     }
-                    else if (state.teamBlue[i].y <= 84 && state.teamBlue[i].y >= 72)
+                    else if (state.teamYellow[i].y <= 84 && state.teamYellow[i].y >= 72)
                     {
                         ataque = abajo;
                     }
@@ -413,8 +413,8 @@ struct robot
     }
     void portero2(State &state)
     {
-        x = state.teamYellow[id].x;
-        y = state.teamYellow[id].y;
+        x = state.teamBlue[id].x;
+        y = state.teamBlue[id].y;
         x_dest = 5;
         y_dest = (state.ball.y < 46) ? 46 : (state.ball.y > 84) ? 84 : state.ball.y;
     }
